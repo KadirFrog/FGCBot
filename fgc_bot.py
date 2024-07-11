@@ -10,7 +10,6 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 
 @bot.event
 async def on_ready():
-    #await bot.wait_until_ready()
     print(await bot.tree.sync(guild=discord.Object(GUILD_ID)))
     print(f"Logged in as {bot.user.name}")
 
@@ -39,12 +38,15 @@ async def meet(interaction: discord.Interaction, meeting_name: str):
         return
     overwrites = {
         interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
-        user_country_role: discord.PermissionOverwrite(view_channel=True, connect=True, speak=True, mute_members=True, deafen_members=True, move_members=True, use_voice_activation=True)
+        user_country_role: discord.PermissionOverwrite(view_channel=True, connect=True, speak=True, mute_members=True,
+                                                       deafen_members=True, move_members=True,
+                                                       use_voice_activation=True)
     }
     category = discord.utils.get(interaction.guild.categories, name="Meeting Rooms")
     await interaction.guild.create_voice_channel(meeting_name, overwrites=overwrites,
                                                  category=category)
     await interaction.response.send_message(f"Created meeting room {meeting_name}")
+
 
 @bot.tree.command(name="add", description="Add a role to meeting room", guild=discord.Object(GUILD_ID))
 async def add(interaction: discord.Interaction, role: discord.Role, vc: discord.VoiceChannel):
@@ -63,7 +65,26 @@ async def add(interaction: discord.Interaction, role: discord.Role, vc: discord.
         else:
             await interaction.response.send_message(f"You don't have permission to add roles to {vc.name}")
     except:
-        print("Error")
-    await interaction.response.send_message(f"Meeting room {vc.name} not found or you don't have permission to add roles to it")
+        pass
+    await interaction.response.send_message(
+        f"Meeting room {vc.name} not found or you don't have permission to add roles to it")
+
+@bot.tree.command(name="end", description="End all your meetings", guild=discord.Object(GUILD_ID))
+async def end(interaction: discord.Interaction):
+    for r in interaction.user.roles:
+        if r.name[0] in alphabet_emojis:
+            user_country_role = r
+            break
+    else:
+        await interaction.response.send_message("You must have a country role to end your meetings")
+        return
+    for vc in discord.utils.get(interaction.guild.categories, name="Meeting Rooms").voice_channels:
+        try:
+            if vc.overwrites[user_country_role].mute_members:
+                await vc.delete()
+        except:
+            pass
+    await interaction.response.send_message("Ended all your meetings")
+
 
 bot.run(TOKEN)
