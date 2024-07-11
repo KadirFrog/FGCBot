@@ -1,12 +1,17 @@
 import discord
 from discord.ext import commands
 from private_data import TOKEN, GUILD_ID
-from countries import alphabet_emojis
+
 
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="/", intents=intents)
 
+alphabet_emojis = [
+    '🇦', '🇧', '🇨', '🇩', '🇪', '🇫', '🇬', '🇭', '🇮', '🇯',
+    '🇰', '🇱', '🇲', '🇳', '🇴', '🇵', '🇶', '🇷', '🇸', '🇹',
+    '🇺', '🇻', '🇼', '🇽', '🇾', '🇿'
+]
 
 @bot.event
 async def on_ready():
