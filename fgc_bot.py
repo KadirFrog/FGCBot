@@ -16,6 +16,9 @@ async def on_ready():
 async def country(interaction:discord.Interaction,role:discord.Role):
     for letter in alphabet_emojis:
         if role.name[0] == letter:
+            for r in interaction.user.roles:
+                if r.name[0] in alphabet_emojis:
+                    await interaction.user.remove_roles(r)
             await interaction.user.add_roles(role)
             await interaction.response.send_message(f"Added role {role.name} to @{interaction.user.name}")
             return
