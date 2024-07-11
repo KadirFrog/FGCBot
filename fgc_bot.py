@@ -56,10 +56,12 @@ async def add(interaction: discord.Interaction, role: discord.Role, vc: discord.
         await interaction.response.send_message("You must have a country role to add a role to a meeting room")
         return
     try:
-        if vc.overwrites[user_country_role] == discord.PermissionOverwrite(mute_members=True):
+        if vc.overwrites[user_country_role].mute_members:
             await vc.set_permissions(role, view_channel=True)
             await interaction.response.send_message(f"Added role {role.name} to {vc.name}")
             return
+        else:
+            await interaction.response.send_message(f"You don't have permission to add roles to {vc.name}")
     except:
         print("Error")
     await interaction.response.send_message(f"Meeting room {vc.name} not found or you don't have permission to add roles to it")
