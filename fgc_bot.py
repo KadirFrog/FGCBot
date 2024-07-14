@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from private_data import TOKEN, GUILD_ID
+from private_data import *
 
 
 intents = discord.Intents.default()
@@ -27,7 +27,7 @@ async def country(interaction: discord.Interaction, role: discord.Role):
                 if r.name[0] in alphabet_emojis:
                     await interaction.user.remove_roles(r)
             await interaction.user.add_roles(role)
-            await interaction.response.send_message(f"Added role {role.name} to @{interaction.user.name}")
+            await interaction.response.send_message(f"Added role {role.name} to {interaction.user.mention}")
             return
     await interaction.response.send_message(f"Role {role.name} not found / not allowed")
 
@@ -65,7 +65,8 @@ async def add(interaction: discord.Interaction, role: discord.Role, vc: discord.
     try:
         if vc.overwrites[user_country_role].mute_members:
             await vc.set_permissions(role, view_channel=True)
-            await interaction.response.send_message(f"Added role {role.name} to {vc.name}")
+            await interaction.response.send_message(f"Added country {role.mention} to {vc.mention}")
+            await interaction.guild.get_channel(mn_cID).send(f"{role.mention}, your country has been invited to the meeting: {vc.mention}, by team {user_country_role.mention}.\n({interaction.user.mention} added country {role.mention} to {vc.mention})")
             return
         else:
             await interaction.response.send_message(f"You don't have permission to add roles to {vc.name}")
