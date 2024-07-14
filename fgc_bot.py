@@ -5,6 +5,7 @@ from private_data import *
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 bot = commands.Bot(command_prefix="/", intents=intents)
 
 alphabet_emojis = [
@@ -17,6 +18,13 @@ alphabet_emojis = [
 async def on_ready():
     print(await bot.tree.sync(guild=discord.Object(GUILD_ID)))
     print(f"Logged in as {bot.user.name}")
+
+@bot.event
+async def on_member_join(member):
+    print("Someone joined")
+    server_rules_c = member.guild.get_channel(rules_cID)
+    team_assignment_c = member.guild.get_channel(ta_ID)
+    await member.guild.get_channel(ta_ID).send(f"Hey {member.mention}, welcome to FIRST® Global Challenge:tada:! Don't forget to read rules in {server_rules_c.mention} and use /country in {team_assignment_c.mention}!")
 
 
 @bot.tree.command(name="country", description="Get the role of your country", guild=discord.Object(GUILD_ID))
