@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from private_data import *
-
+from continent_manager import get_continent_from_emoji
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -13,6 +13,8 @@ alphabet_emojis = [
     '🇰', '🇱', '🇲', '🇳', '🇴', '🇵', '🇶', '🇷', '🇸', '🇹',
     '🇺', '🇻', '🇼', '🇽', '🇾', '🇿'
 ]
+
+continents = ["Africa", "Antarctica", "Asia", "Europe", "America", "Oceania"]
 
 @bot.event
 async def on_ready():
@@ -29,13 +31,35 @@ async def on_member_join(member):
 
 @bot.tree.command(name="country", description="Get the role of your country", guild=discord.Object(GUILD_ID))
 async def country(interaction: discord.Interaction, role: discord.Role):
+    cont = False
+    old_continent = None
+    manager_role = discord.utils.get(interaction.guild.roles, name="Manager")
     for letter in alphabet_emojis:
         if role.name[0] == letter:
             for r in interaction.user.roles:
                 if r.name[0] in alphabet_emojis:
                     await interaction.user.remove_roles(r)
+                elif r.name in continents:
+                    await interaction.user.remove_roles(r)
+                    old_continent = r
+
             await interaction.user.add_roles(role)
-            await interaction.response.send_message(f"Added role {role.name} to {interaction.user.mention}")
+            country_role = role.name[:2]
+            continent_role_name = get_continent_from_emoji(country_role)
+            if continent_role_name == "North America" or continent_role_name == "South America":
+                continent_role_name = "America"
+            continent_role = discord.utils.get(interaction.guild.roles, name=continent_role_name)
+            print(continent_role.name)
+            try:
+                await interaction.user.add_roles(continent_role)
+                cont = True
+            except Exception as e:
+                print("Error: ", e)
+                print(continent_role_name)
+                print(continent_role)
+            await interaction.response.send_message(f"Added role {role.mention} to {interaction.user.mention}" if cont else f"Added role {role.mention} to {interaction.user.mention}, but continent not found. (Your old continent role stayed if you had one, please contact a {manager_role.mention})")
+            if not cont:
+                await interaction.user.add_roles(old_continent)
             return
     await interaction.response.send_message(f"Role {role.name} not found / not allowed")
 
